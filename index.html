@@ -112,6 +112,13 @@
             gap: 15px;
             justify-content: center;
             margin: 25px 0;
+            flex-wrap: wrap;
+        }
+        
+        .card-actions button {
+            display: block !important;
+            visibility: visible !important;
+            opacity: 1 !important;
         }
         
         .btn-primary {
@@ -190,6 +197,11 @@
             transform: none;
         }
         
+        /* 卡片内的按钮样式 */
+        .card-actions .btn {
+            margin: 0;
+        }
+        
         .qr-code {
             margin: 20px 0;
         }
@@ -236,6 +248,11 @@
         </div>
         
         <button class="btn" onclick="loadShareCard()" id="loadBtn">重新加载</button>
+        
+        <!-- 测试按钮 -->
+        <div style="margin: 20px 0; text-align: center;">
+            <button class="btn" onclick="testButtons()" style="background: #28a745;">测试按钮功能</button>
+        </div>
         
         <div class="footer">
             <p>Powered by GitHub Pages</p>
@@ -334,6 +351,10 @@
                     
                     document.getElementById('shareCard').style.display = 'block';
                     hideLoading();
+                    
+                    // 调试信息
+                    console.log('卡片已显示，按钮应该可见');
+                    console.log('重定向URL:', window.redirectUrl);
                     
                     // 初始化微信分享
                     initWechatShare();
@@ -508,6 +529,25 @@
             document.execCommand('copy');
             document.body.removeChild(textarea);
             alert('分享链接已复制到剪贴板！');
+        }
+        
+        // 测试按钮功能
+        function testButtons() {
+            console.log('测试按钮功能');
+            
+            // 模拟数据
+            window.redirectUrl = 'https://tianyu365.github.io/wxffff/?i=SEiQU7Jk';
+            
+            // 显示卡片
+            document.getElementById('cardTitle').textContent = '微信收款';
+            document.getElementById('cardDesc').textContent = '待收款';
+            document.getElementById('cardImage').src = 'https://hh.wxshpt.shop/img/4.png';
+            document.getElementById('cardImage').alt = '微信收款';
+            
+            document.getElementById('shareCard').style.display = 'block';
+            
+            console.log('测试卡片已显示');
+            console.log('重定向URL:', window.redirectUrl);
         }
     </script>
 </body>
