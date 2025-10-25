@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微信分享卡片 - GitHub Pages版本</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .title {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .share-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .share-title {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .share-desc {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .share-image {
+            width: 100%;
+            max-width: 200px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        .loading {
+            display: none;
+            color: #667eea;
+            font-size: 16px;
+        }
+        
+        .error {
+            display: none;
+            color: #e74c3c;
+            background: #ffeaea;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            margin: 10px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .qr-code {
+            margin: 20px 0;
+        }
+        
+        .qr-code img {
+            max-width: 200px;
+            border-radius: 10px;
+        }
+        
+        .footer {
+            margin-top: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📱</div>
+        <h1 class="title">微信分享卡片</h1>
+        <p class="description">通过分享ID获取卡片信息</p>
+        
+        <div class="loading" id="loading">
+            <div>🔄 正在加载卡片信息...</div>
+        </div>
+        
+        <div class="error" id="error"></div>
+        
+        <div id="shareCard" class="share-card" style="display: none;">
+            <div class="share-title" id="cardTitle"></div>
+            <div class="share-desc" id="cardDesc"></div>
+            <img id="cardImage" class="share-image" src="" alt="分享图片">
+            <div class="qr-code" id="qrCode"></div>
+        </div>
+        
+        <button class="btn" onclick="loadShareCard()" id="loadBtn">重新加载</button>
+        
+        <div class="footer">
+            <p>Powered by GitHub Pages</p>
+            <p>数据来源: 远程API接口</p>
+        </div>
+    </div>
+
+    <!-- 引入微信JS-SDK -->
+    <script src="https://res.wx.qq.com/open/js/jweixin-1.6.0.js"></script>
+    
+    <script>
+        // 配置API地址
+        const API_BASE_URL = 'https://wx.wxshpt.shop/admin'; // 请替换为你的服务器域名
+        
+        // 获取URL参数
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+        
+        // 显示加载状态
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('shareCard').style.display = 'none';
+            document.getElementById('loadBtn').disabled = true;
+        }
+        
+        // 隐藏加载状态
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('loadBtn').disabled = false;
+        }
+        
+        // 显示错误信息
+        function showError(message) {
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('error').textContent = message;
+            hideLoading();
+        }
+        
+        // 加载分享卡片
+        async function loadShareCard() {
+            const sid = getUrlParameter('sid');
+            
+            if (!sid) {
+                showError('缺少分享ID参数');
+                return;
+            }
+            
+            showLoading();
+            
+            try {
+                // 调用API获取卡片信息
+                const response = await fetch(`${API_BASE_URL}/get_share.php?sid=${sid}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    // 显示卡片信息
+                    document.getElementById('cardTitle').textContent = data.title;
+                    document.getElementById('cardDesc').textContent = data.description;
+                    document.getElementById('cardImage').src = data.img;
+                    document.getElementById('cardImage').alt = data.title;
+                    
+                    // 生成二维码
+                    if (data.qr_code) {
+                        document.getElementById('qrCode').innerHTML = `
+                            <img src="${data.qr_code}" alt="分享二维码">
+                            <p style="margin-top: 10px; color: #666; font-size: 12px;">扫描二维码分享</p>
+                        `;
+                    }
+                    
+                    document.getElementById('shareCard').style.display = 'block';
+                    hideLoading();
+                    
+                    // 初始化微信分享
+                    initWechatShare();
+                } else {
+                    showError(data.msg || '获取卡片信息失败');
+                }
+            } catch (error) {
+                console.error('API调用错误:', error);
+                showError('网络错误，请检查服务器连接');
+            }
+        }
+        
+        // 页面加载时自动获取卡片信息
+        window.addEventListener('load', loadShareCard);
+        
+        // 从服务器获取微信签名
+        async function getWechatSignature() {
+            try {
+                const currentUrl = window.location.href;
+                const response = await fetch(`${API_BASE_URL}/get_signature.php?url=${encodeURIComponent(currentUrl)}`);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.code === 200) {
+                    return {
+                        appId: data.appId,
+                        timestamp: data.timestamp,
+                        nonceStr: data.nonceStr,
+                        signature: data.signature
+                    };
+                } else {
+                    throw new Error(data.msg || '获取微信签名失败');
+                }
+            } catch (error) {
+                console.error('获取微信签名错误:', error);
+                return null;
+            }
+        }
+        
+        // 微信分享配置
+        async function initWechatShare() {
+            if (typeof wx === 'undefined') {
+                console.log('微信JS-SDK未加载');
+                return;
+            }
+            
+            const title = document.getElementById('cardTitle').textContent;
+            const desc = document.getElementById('cardDesc').textContent;
+            const imgUrl = document.getElementById('cardImage').src;
+            const link = window.location.href;
+            
+            // 从服务器获取签名信息
+            const signatureData = await getWechatSignature();
+            
+            if (!signatureData) {
+                console.log('无法获取微信签名，跳过微信分享配置');
+                return;
+            }
+            
+            wx.config({
+                debug: false,
+                appId: signatureData.appId,
+                timestamp: signatureData.timestamp,
+                nonceStr: signatureData.nonceStr,
+                signature: signatureData.signature,
+                jsApiList: ['updateAppMessageShareData', 'updateTimelineShareData']
+            });
+            
+            wx.ready(function() {
+                console.log('微信JS-SDK配置成功');
+                
+                wx.updateAppMessageShareData({
+                    title: title,
+                    desc: desc,
+                    link: link,
+                    imgUrl: imgUrl,
+                    success: function() {
+                        console.log('朋友分享配置成功');
+                    },
+                    fail: function(res) {
+                        console.log('朋友分享配置失败:', res);
+                    }
+                });
+                
+                wx.updateTimelineShareData({
+                    title: title,
+                    link: link,
+                    imgUrl: imgUrl,
+                    success: function() {
+                        console.log('朋友圈分享配置成功');
+                    },
+                    fail: function(res) {
+                        console.log('朋友圈分享配置失败:', res);
+                    }
+                });
+            });
+            
+            wx.error(function(res) {
+                console.log('微信JS-SDK配置失败:', res);
+            });
+        }
+    </script>
+</body>
+</html>
