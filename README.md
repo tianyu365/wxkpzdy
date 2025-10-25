@@ -1,95 +1,100 @@
-# 微信分享卡片 - GitHub Pages版本
+# 微信分享卡片 📱
 
-这是一个基于GitHub Pages的微信分享卡片系统，通过JavaScript调用远程API来获取数据。
+基于GitHub Pages的微信分享卡片系统，支持动态加载和微信分享功能。
 
-## 项目结构
+## 🌐 在线演示
+
+- **主页面**: [https://tianyu365.github.io/wxkpzdy/](https://tianyu365.github.io/wxkpzdy/)
+- **测试页面**: [https://tianyu365.github.io/wxkpzdy/test.html](https://tianyu365.github.io/wxkpzdy/test.html)
+- **分享示例**: [https://tianyu365.github.io/wxkpzdy/?sid=123456](https://tianyu365.github.io/wxkpzdy/?sid=123456)
+
+## 🚀 快速开始
+
+### 1. 访问分享卡片
+```
+https://tianyu365.github.io/wxkpzdy/?sid=你的分享ID
+```
+
+### 2. 创建分享卡片
+访问 [https://wx.wxshpt.shop/creat.html](https://wx.wxshpt.shop/creat.html) 创建新的分享卡片
+
+## 📁 项目结构
 
 ```
-github-pages/
-├── index.html              # GitHub Pages主页面
-├── admin/                  # 服务器API目录
-│   ├── get_share.php       # 获取分享卡片API
-│   ├── get_signature.php   # 获取微信签名API
-│   ├── redirect.php        # 重定向页面
-│   └── db_config.php       # 数据库配置
+wxkpzdy/
+├── index.html              # 主页面
+├── test.html               # 测试页面
+├── _config.yml             # Jekyll配置
+├── .github/
+│   └── workflows/
+│       └── pages.yml       # 自动部署
 └── README.md               # 说明文档
 ```
 
-## 部署步骤
+## 🔧 技术特性
 
-### 1. GitHub Pages部署
+- ✅ **响应式设计** - 支持手机和桌面端
+- ✅ **微信分享** - 完整的微信JS-SDK集成
+- ✅ **动态加载** - 通过API获取卡片信息
+- ✅ **二维码生成** - 自动生成分享二维码
+- ✅ **自动部署** - GitHub Actions自动部署
+- ✅ **SEO优化** - Jekyll SEO插件支持
 
-1. 将 `index.html` 上传到GitHub仓库
+## 🛠️ 部署说明
+
+### GitHub Pages部署
+
+1. Fork本仓库
 2. 启用GitHub Pages功能
-3. 设置Pages源为main分支
-4. 访问 `https://your-username.github.io/your-repo/`
+3. 设置Pages源为GitHub Actions
+4. 自动部署完成
 
-### 2. 服务器API部署
+### 服务器API部署
 
-1. 将 `admin/` 目录上传到你的服务器
-2. 配置数据库连接信息（修改 `db_config.php`）
-3. 确保服务器支持PHP和MySQL
-4. 设置CORS允许跨域访问
+将 `admin/` 目录上传到服务器，确保以下API可访问：
+- `get_share.php` - 获取分享卡片信息
+- `get_signature.php` - 获取微信签名
+- `redirect.php` - 重定向页面
 
-### 3. 配置修改
+## 📱 使用方式
 
-#### 修改API地址
-在 `index.html` 中修改API地址：
-```javascript
-const API_BASE_URL = 'https://your-server-domain.com/admin';
+### 创建分享卡片
+1. 访问创建页面
+2. 填写卡片信息（标题、描述、图片、链接）
+3. 获取分享ID
+
+### 分享卡片
+1. 使用分享链接：`https://tianyu365.github.io/wxkpzdy/?sid=分享ID`
+2. 在微信中打开链接
+3. 点击右上角分享按钮
+
+## 🔍 API接口
+
+### 获取分享卡片
+```http
+GET /admin/get_share.php?sid={分享ID}
 ```
-
-#### 修改微信配置
-在 `index.html` 中修改微信AppID：
-```javascript
-appId: 'your_app_id', // 替换为你的微信AppID
-```
-
-#### 修改数据库配置
-在 `admin/db_config.php` 中修改数据库信息：
-```php
-$db_url = "localhost";
-$db_user = "your_db_user";
-$db_pwd = "your_db_password";
-$db_name = "your_db_name";
-$appid = "your_wechat_appid";
-$appsecret = "your_wechat_appsecret";
-```
-
-## API接口说明
-
-### 获取分享卡片信息
-- **URL**: `/admin/get_share.php?sid={分享ID}`
-- **方法**: GET
-- **返回**: JSON格式的卡片信息
 
 ### 获取微信签名
-- **URL**: `/admin/get_signature.php?url={当前页面URL}`
-- **方法**: GET
-- **返回**: JSON格式的微信JS-SDK签名信息
+```http
+GET /admin/get_signature.php?url={当前页面URL}
+```
 
-### 重定向页面
-- **URL**: `/admin/redirect.php?sid={分享ID}`
-- **方法**: GET
-- **功能**: 重定向到目标链接
+## 🎯 配置要求
 
-## 使用说明
+- **服务器**: PHP 7.0+ + MySQL 5.7+
+- **域名**: 需要在微信公众平台配置JS安全域名
+- **HTTPS**: 建议使用HTTPS协议
 
-1. 访问GitHub Pages页面
-2. 在URL后添加 `?sid=分享ID` 参数
-3. 页面会自动加载并显示分享卡片
-4. 支持微信分享功能
+## 📄 许可证
 
-## 注意事项
+MIT License
 
-1. 确保服务器支持CORS跨域访问
-2. 微信分享需要在微信公众平台配置JS安全域名
-3. 数据库表结构需要与原有系统保持一致
-4. 建议使用HTTPS协议确保安全性
+## 🤝 贡献
 
-## 技术栈
+欢迎提交Issue和Pull Request！
 
-- **前端**: HTML5, CSS3, JavaScript (ES6+)
-- **后端**: PHP 7.0+
-- **数据库**: MySQL 5.7+
-- **部署**: GitHub Pages + 独立服务器
+## 📞 联系
+
+- GitHub: [@tianyu365](https://github.com/tianyu365)
+- 项目地址: [https://github.com/tianyu365/wxkpzdy](https://github.com/tianyu365/wxkpzdy)
